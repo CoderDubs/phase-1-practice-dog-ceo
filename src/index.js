@@ -1,4 +1,7 @@
-const imagesUrl = "https://dog.ceo/api/breeds/image/random/5";
+//Dog Website!
+//Fetch and render dog images and breeds dynamically
+//Dropdown menu to filter by first letter of breed
+const imagesUrl = "https://dog.ceo/api/breeds/image/random/21";
 const breedUrl = "https://dog.ceo/api/breeds/list/all";
 const imageContainer = document.getElementById('dog-image-container');
 const breedContainer = document.getElementById('dog-breeds');
@@ -11,60 +14,81 @@ function fetchImages() {
     .then((json) => {
       renderImages(json.message);
     });
-  }
+}
 function renderImages(images) {
     const imageContainer = document.getElementById('dog-image-container');
     for(let i=0;i<images.length;i++){
         const imgElements = document.createElement('img');
         imgElements.style.position = "static";
-        imgElements.style.width = "300px";
-        imgElements.style.height = "300px";
+        imgElements.style.width = "160px";
+        imgElements.style.height = "160px";
         imgElements.src = images[i];
         imgElements.alt = 'dog images'
         imageContainer.appendChild(imgElements); 
     }
 }
 
-function fetchBreeds() {
-    console.log('test');
-    fetch(breedUrl)
-    .then((resp) => resp.json())
-    .then((json) => {
-      renderBreeds(json.message);
+// Filter breeds that start with the selected letter
+async function filterBreeds(breeds) {
+    const dropDown = document.getElementById('breed-dropdown');
+    dropDown.addEventListener('change', function () {
+        const selectedLetter = dropDown.value;
+        const filteredBreeds = breeds.filter(breed => breed.startsWith(selectedLetter));
+        renderBreeds(filteredBreeds);
     });
 }
 
 function renderBreeds(breeds) {
     const breedContainer = document.getElementById('dog-breeds');
-    objKeys = Object.keys(breeds);
+    if (breeds.length === 0) {
+        breedContainer.textContent = 'Needs more breed data.';
+        return;
+     }     
+    // Clear any previously rendered breeds
+    breedContainer.innerHTML = '';
     const ulData = document.createElement('ul');
-    for(let e=0;e<objKeys.length;e++){
-        //loop through each breed key and create list element
+    breeds.forEach(breed => {
         const liData = document.createElement('li');
-        liData.textContent = objKeys[e];
-        //change font color on list click
-        liData.addEventListener("click", function(a) {
-            a.target.style.color = 'cyan';
+        liData.textContent = breed;
+
+        // Change font color on list click
+        liData.addEventListener("click", function (e) {
+            e.target.style.color = 'cyan';
         });
-    ulData.appendChild(liData);
-    }
+        ulData.appendChild(liData);
+    });
     breedContainer.appendChild(ulData);
 }
 
-async function filterBreeds(params) {
-    
+async function fetchBreeds() {
+    const breedUrl = 'https://dog.ceo/api/breeds/list/all';  // Assuming this is the correct URL
+    const response = await fetch(breedUrl);
+    const data = await response.json();
+    // Convert object keys into an array of breed names
+    const breeds = Object.keys(data.message);
+    // Initially render all breeds
+    renderBreeds(breeds);
+    return breeds;
 }
 
-/*
-filter breeds that start 
-with a particular letter using a dropdownLinks to an external site..
-ex if user selects 'a' in dropdown, only show breeds with 
-names that start letter a. onlylettersa-d.
-*/
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const dropDown = document.getElementById('breed-dropdown');
+  const defaultOption = document.createElement('option');
+  defaultOption.textContent = 'Pick A Letter';
+  defaultOption.value = '';
+  dropDown.appendChild(defaultOption);
+
+  // Generate alphabet options dynamically
+  alphabet.forEach(letter => {
+    const option = document.createElement('option');
+    option.value = letter.toLowerCase();
+    option.textContent = letter;
+    dropDown.appendChild(option);
+  });
+    
     fetchImages();
-    fetchBreeds();
-    filterBreeds();
-
-
+    const breeds = await fetchBreeds();
+    filterBreeds(breeds); 
+    breedContainer.scrollIntoView({ behavior: 'smooth' });
 });
