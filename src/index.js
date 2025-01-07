@@ -72,7 +72,7 @@ async function fetchBreeds() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const alphabet = 'ABDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const dropDown = document.getElementById('breed-dropdown');
   const defaultOption = document.createElement('option');
   defaultOption.textContent = 'Pick A Letter';
